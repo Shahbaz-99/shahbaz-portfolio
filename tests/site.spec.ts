@@ -37,6 +37,42 @@ test('theme toggle switches and persists', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 
+test('theme toggle remains usable when browser storage is unavailable', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get() { throw new DOMException('Storage is unavailable.', 'SecurityError'); },
+    });
+  });
+  await page.goto(`${base}/`);
+  const current = await page.locator('html').getAttribute('data-theme');
+  await page.click('[data-theme-toggle]');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+});
+
+test('GitHub activity gives a useful message when the API rate limit is reached', async ({ page }) => {
+  await page.route('https://api.github.com/**', (route) => route.fulfill({
+    status: 429,
+    contentType: 'application/json',
+    body: JSON.stringify({ message: 'API rate limit exceeded' }),
+  }));
+  await page.goto(`${base}/`);
+  await page.locator('[data-gh-status]').scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-gh-status]')).toContainText('temporarily rate limited');
+});
+
+test('GitHub activity rejects an invalid API response safely', async ({ page }) => {
+  await page.route('https://api.github.com/**', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify([{ name: 'invalid repository', html_url: 'javascript:alert(1)' }]),
+  }));
+  await page.goto(`${base}/`);
+  await page.locator('[data-gh-status]').scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-gh-status]')).toContainText('Could not load repositories');
+  await expect(page.locator('[data-gh-list] li')).toHaveCount(0);
+});
+
 test('home has greeting, projects and dock', async ({ page }) => {
   await page.goto(`${base}/`);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('here!');

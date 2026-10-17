@@ -2,12 +2,56 @@ type Repo = { name: string; description: string | null; html_url: string; langua
 
 const list = document.querySelector<HTMLUListElement>('[data-gh-list]');
 const statusEl = document.querySelector<HTMLElement>('[data-gh-status]');
+const cacheLifetime = 600000;
 
 function ago(iso: string): string {
-  const days = Math.round((new Date(iso).getTime() - Date.now()) / 86400000);
+  const days = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86400000));
   const f = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
   if (Math.abs(days) >= 30) return f.format(Math.round(days / 30), 'month');
   return f.format(days, 'day');
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function parseRepos(value: unknown): Repo[] | null {
+  if (!Array.isArray(value)) return null;
+
+  const repos = value.filter((item): item is Repo => {
+    if (!isRecord(item)) return false;
+    return typeof item.name === 'string'
+      && item.name.length > 0
+      && typeof item.html_url === 'string'
+      && /^https:\/\/github\.com\/[^/?#]+\/[^/?#]+\/?$/.test(item.html_url)
+      && (item.description === null || typeof item.description === 'string')
+      && (item.language === null || typeof item.language === 'string')
+      && typeof item.pushed_at === 'string'
+      && Number.isFinite(Date.parse(item.pushed_at))
+      && typeof item.fork === 'boolean'
+      && typeof item.archived === 'boolean';
+  });
+
+  return repos.length === value.length ? repos : null;
+}
+
+function readCache(key: string): Repo[] | null {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const cached: unknown = JSON.parse(raw);
+    if (!isRecord(cached) || typeof cached.t !== 'number' || !Number.isFinite(cached.t)) {
+      console.warn('Ignoring malformed GitHub activity cache.');
+      return null;
+    }
+    const age = Date.now() - cached.t;
+    const repos = parseRepos(cached.d);
+    if (age >= 0 && age < cacheLifetime && repos) return repos;
+    console.warn('Ignoring expired or invalid GitHub activity cache.');
+  } catch {
+    console.warn('GitHub activity cache is unavailable; loading without it.');
+  }
+  return null;
 }
 
 function render(repos: Repo[]) {
@@ -29,16 +73,30 @@ function render(repos: Repo[]) {
 async function load() {
   if (!list) return;
   const user = list.dataset.user ?? '';
+  if (!user) {
+    if (statusEl) statusEl.textContent = 'GitHub profile is unavailable. Use the link below.';
+    return;
+  }
   const key = `gh:${user}`;
   try {
-    let data: Repo[] | null = null;
-    const cached = sessionStorage.getItem(key);
-    if (cached) { const c = JSON.parse(cached); if (Date.now() - c.t < 600000) data = c.d; }
+    let data = readCache(key);
     if (!data) {
-      const res = await fetch(`https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=pushed&per_page=12&type=owner`, { headers: { Accept: 'application/vnd.github+json' } });
-      if (!res.ok) throw new Error(String(res.status));
-      data = (await res.json()) as Repo[];
-      try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch {}
+      const res = await fetch(`https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=pushed&per_page=12&type=owner`, {
+        headers: { Accept: 'application/vnd.github+json' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.status === 403 || res.status === 429) {
+        if (statusEl) statusEl.textContent = 'GitHub is temporarily rate limited. Use the link below.';
+        return;
+      }
+      if (!res.ok) throw new Error(`GitHub API returned ${res.status}.`);
+      data = parseRepos(await res.json());
+      if (!data) throw new Error('GitHub API returned invalid repository data.');
+      try {
+        sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data }));
+      } catch {
+        console.warn('GitHub activity cache could not be saved.');
+      }
     }
     render(data.filter((r) => !r.fork && !r.archived).slice(0, 4));
   } catch {
@@ -49,8 +107,6 @@ async function load() {
 if (list) {
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((e) => { if (e[0].isIntersecting) { io.disconnect(); load(); } }, { rootMargin: '200px' });
-    io.observe(list);
+    io.observe(statusEl ?? list);
   } else load();
 }
-
-
