@@ -99,12 +99,16 @@
     left: 0;
     width: 0;
     height: 0;
-    pointer-events: none;
+    pointer-events: none !important;
     z-index: 9999;
     opacity: 0;
-    transition: opacity 0.4s ease-out;
+    transition: opacity 0.5s ease-out;
     will-change: transform;
-    perspective: 400px;
+    perspective: 500px;
+  }
+
+  .bf-follower * {
+    pointer-events: none !important;
   }
 
   .bf-follower[data-active="true"] {
@@ -124,6 +128,7 @@
   .bf-hover {
     display: inline-block;
     will-change: transform;
+    transform-style: preserve-3d;
   }
 
   .bf-body-wrap {
@@ -140,17 +145,17 @@
     height: 22px;
     display: block;
     transform-style: preserve-3d;
-    filter: drop-shadow(0 1px 2px rgba(90, 10, 15, 0.25));
+    filter: drop-shadow(0 1px 2px rgba(90, 10, 15, 0.28));
   }
 
   .bf-wing-left {
     transform-origin: 100% 50%;
-    animation: bf-flap-left 0.17s ease-in-out infinite alternate;
+    animation: bf-flap-left var(--bf-flap-dur, 0.18s) ease-in-out infinite alternate;
   }
 
   .bf-wing-right {
     transform-origin: 0% 50%;
-    animation: bf-flap-right 0.17s ease-in-out infinite alternate;
+    animation: bf-flap-right var(--bf-flap-dur, 0.18s) ease-in-out infinite alternate;
   }
 
   .bf-body {
@@ -159,7 +164,7 @@
     margin: 0 -1px;
     z-index: 2;
     display: block;
-    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
   }
 
   @keyframes bf-flap-left {
@@ -167,7 +172,7 @@
       transform: rotateY(0deg) scaleY(1);
     }
     100% {
-      transform: rotateY(70deg) scaleY(0.92);
+      transform: rotateY(72deg) scaleY(0.9);
     }
   }
 
@@ -176,7 +181,7 @@
       transform: rotateY(0deg) scaleY(1);
     }
     100% {
-      transform: rotateY(-70deg) scaleY(0.92);
+      transform: rotateY(-72deg) scaleY(0.9);
     }
   }
 
@@ -214,9 +219,11 @@
     let currentAngle = 0;
     let hasMoved = false;
     let animId: number | null = null;
+    let lastFlapDur = 0.18;
 
-    const ease = 0.09;
-    const offsetDistance = 16; // Slight offset so butterfly doesn't block the cursor point
+    // Slow, natural follow easing factor (tuned for graceful natural lag)
+    const followEase = 0.038;
+    const offsetDistance = 18;
 
     function onMouseMove(e: MouseEvent) {
       targetX = e.clientX + offsetDistance;
@@ -246,28 +253,50 @@
         const dy = targetY - currentY;
         const dist = Math.hypot(dx, dy);
 
-        currentX += dx * ease;
-        currentY += dy * ease;
+        // Slow, gradual position interpolation
+        currentX += dx * followEase;
+        currentY += dy * followEase;
 
-        // Hover bobbing motion (subtle sin wave)
-        const hoverX = Math.sin(now * 0.0032) * 4;
-        const hoverY = Math.cos(now * 0.0025) * 3.5;
+        // Wing flapping speed: faster when pursuing cursor, gentle hover flutter when close
+        const speedRatio = Math.min(1, dist / 180);
+        const targetFlapDur = 0.28 - speedRatio * 0.15; // 0.28s (slow hover) down to 0.13s (rapid flight)
+        lastFlapDur += (targetFlapDur - lastFlapDur) * 0.1;
+        follower!.style.setProperty('--bf-flap-dur', `${lastFlapDur.toFixed(3)}s`);
 
-        // Dynamic orientation towards cursor
-        if (dist > 1) {
+        // Organic flight flutter (sideways arc perpendicular to direction of movement)
+        let flutterX = 0;
+        let flutterY = 0;
+        if (dist > 3) {
+          const nx = -dy / dist;
+          const ny = dx / dist;
+          const flutterMag = Math.sin(now * 0.0055) * Math.min(8, dist * 0.08);
+          flutterX = nx * flutterMag;
+          flutterY = ny * flutterMag;
+        }
+
+        // Natural hover bobbing
+        const hoverBobX = Math.sin(now * 0.0026) * 4;
+        const hoverBobY = Math.cos(now * 0.0021) * 3.5;
+
+        // Smooth rotation without jitter
+        if (dist > 4) {
           const targetAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
           let diffAngle = (targetAngle - currentAngle) % 360;
           if (diffAngle > 180) diffAngle -= 360;
           if (diffAngle < -180) diffAngle += 360;
-          currentAngle += diffAngle * 0.12;
+          // Smooth banking turn
+          currentAngle += diffAngle * 0.07;
         } else {
           // Gentle resting drift when stationary
-          currentAngle += Math.sin(now * 0.002) * 0.15;
+          currentAngle += Math.sin(now * 0.0016) * 0.18;
         }
 
-        follower!.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+        const posX = currentX + flutterX;
+        const posY = currentY + flutterY;
+
+        follower!.style.transform = `translate3d(${posX.toFixed(1)}px, ${posY.toFixed(1)}px, 0)`;
         rotator!.style.transform = `rotate(${currentAngle.toFixed(1)}deg)`;
-        hoverEl!.style.transform = `translate3d(${hoverX.toFixed(1)}px, ${hoverY.toFixed(1)}px, 0)`;
+        hoverEl!.style.transform = `translate3d(${hoverBobX.toFixed(1)}px, ${hoverBobY.toFixed(1)}px, 0)`;
       }
 
       animId = requestAnimationFrame(loop);
@@ -277,14 +306,26 @@
     document.addEventListener('mouseleave', onMouseLeave);
     document.addEventListener('mouseenter', onMouseEnter);
 
-    document.addEventListener('visibilitychange', () => {
+    const onVisibility = () => {
       if (document.hidden) {
-        if (animId) cancelAnimationFrame(animId);
-        animId = null;
+        if (animId) {
+          cancelAnimationFrame(animId);
+          animId = null;
+        }
       } else {
         if (!animId) animId = requestAnimationFrame(loop);
       }
-    });
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    const cleanup = () => {
+      if (animId) cancelAnimationFrame(animId);
+      window.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseleave', onMouseLeave);
+      document.removeEventListener('mouseenter', onMouseEnter);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+    window.addEventListener('pagehide', cleanup, { once: true });
 
     animId = requestAnimationFrame(loop);
   })();

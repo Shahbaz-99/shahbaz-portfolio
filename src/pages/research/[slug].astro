@@ -19,7 +19,8 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
       <ul class="tags">{r.tags.map((t) => <li>{t}</li>)}</ul>
       <div class="links">
         <span class="meta">{r.kind} at {r.org}.</span>
-        <a class="ghost" href={r.url}>Visit {r.org} <span aria-hidden="true">↗</span></a>
+        <a class="ghost" href={r.url} target="_blank" rel="noopener noreferrer">Visit {r.org} <span aria-hidden="true">↗</span></a>
+        {r.repo && <a class="ghost" href={r.repo} target="_blank" rel="noopener noreferrer">Source code <span aria-hidden="true">↗</span></a>}
       </div>
     </header>
 

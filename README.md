@@ -1,6 +1,6 @@
-# Sahbaj Ali – Personal Portfolio & Case Studies
+# Shahbaz Ali – Personal Portfolio & Case Studies
 
-Minimalist, high-performance personal portfolio and engineering case studies for **Sahbaj Ali (Shahbaz)**, Backend Developer Intern at **Ethical Intelligence**.
+Minimalist, high-performance personal portfolio and engineering case studies for **Shahbaz Ali**, Backend Developer Intern at **Ethical Intelligence**.
 
 Built with **Astro**, **TypeScript**, and accessible design tokens, optimized for static delivery and WCAG AA compliance.
 

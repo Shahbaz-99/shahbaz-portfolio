@@ -10,21 +10,34 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 ---
 <Base>
   <section id="top" class="hero">
-    <div class="polaroid">
-      {site.photo ? <img src={`${base}${site.photo.replace(/^\//, '')}`} alt={`Portrait of ${site.name}`} width="76" height="76" /> : <span class="ph" aria-hidden="true">{site.initials}</span>}
+    <div class="hero-top">
+      <div class="polaroid">
+        {site.photo ? <img src={`${base}${site.photo.replace(/^\//, '')}`} alt={`Portrait of ${site.name}`} width="76" height="76" /> : <span class="ph" aria-hidden="true">{site.initials}</span>}
+      </div>
+      <div class="status-pill" aria-label="Availability status">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Open to backend roles & internships</span>
+      </div>
     </div>
     <div class="greet">
       <h1 class="hello">{site.name.split(' ')[0]} here!</h1>
       <span class="clock" data-clock-wrap aria-hidden="true"><span data-clock={site.timezone}></span> {site.tzLabel}</span>
     </div>
+    <p class="hero-headline">{site.headline}</p>
     <p>{site.description}</p>
     <p>Currently contributing as a Backend Developer Intern at <a class="lnk" href={experience[0].url}>{experience[0].org}</a>, where the focus is on developing and maintaining REST APIs, implementing authentication and authorization mechanisms, and containerizing applications using Docker.</p>
     <p>Strong interest in backend development, problem-solving, and building reliable software solutions. I also enjoy AI-related research.</p>
-    <div class="chips">
-      <a class="chip" href={`mailto:${site.email}`} aria-label="Email"><Icon name="mail" /></a>
-      {site.linkedin && <a class="chip" href={site.linkedin} aria-label="LinkedIn"><Icon name="linkedin" /></a>}
-      <a class="chip" href={site.github} aria-label="GitHub"><Icon name="code" /></a>
-      {site.resumeUrl && <a class="chip" href={site.resumeUrl} aria-label="Resume (PDF)"><Icon name="file" /></a>}
+    <div class="hero-cta-group">
+      <div class="hero-btns">
+        <a class="btn-primary" href="#projects">Explore Projects ↓</a>
+        {site.linkedin && <a class="btn-secondary" href={site.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>}
+      </div>
+      <div class="chips">
+        <a class="chip" href={`mailto:${site.email}`} aria-label="Email"><Icon name="mail" /></a>
+        {site.linkedin && <a class="chip" href={site.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /></a>}
+        <a class="chip" href={site.github} aria-label="GitHub" target="_blank" rel="noopener noreferrer"><Icon name="code" /></a>
+        {site.resumeUrl && <a class="chip" href={site.resumeUrl} aria-label="Resume (PDF)"><Icon name="file" /></a>}
+      </div>
     </div>
   </section>
 
@@ -53,6 +66,21 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
       ))}
     </ul>
     <p class="meta reveal">Stack: {stack}</p>
+    <div class="skills-overview reveal">
+      <h3 class="skills-title">Technical Skills</h3>
+      <div class="skills-grid">
+        {skills.map((s) => (
+          <div class="skill-category">
+            <span class="skill-label">{s.group}</span>
+            <div class="skill-tags">
+              {s.items.map((it) => (
+                <span class="skill-tag">{it}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   </section>
 
   <section id="education" class="block" aria-labelledby="h-edu">

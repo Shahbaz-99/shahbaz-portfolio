@@ -23,8 +23,24 @@ const nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{full}</title>
     <meta name="description" content={description} />
+    <meta name="author" content={site.name} />
+    <meta name="theme-color" content="#f4ecdd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#181817" media="(prefers-color-scheme: dark)" />
+    <link rel="canonical" href={`https://shahbaz-99.github.io${Astro.url.pathname}`} />
+    
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={`https://shahbaz-99.github.io${Astro.url.pathname}`} />
     <meta property="og:title" content={full} />
     <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={`${site.name} Portfolio`} />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:url" content={`https://shahbaz-99.github.io${Astro.url.pathname}`} />
+    <meta name="twitter:title" content={full} />
+    <meta name="twitter:description" content={description} />
+
     <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
     <script is:inline>
       (function () {
@@ -52,8 +68,8 @@ const nav = [
         <p>Built with Astro on Cloudflare Pages. <a class="lnk" href={`${base}architecture`}>How it's built</a></p>
         <div class="chips">
           <a class="chip" href={`mailto:${site.email}`} aria-label="Email"><Icon name="mail" /></a>
-          {site.linkedin && <a class="chip" href={site.linkedin} aria-label="LinkedIn"><Icon name="linkedin" /></a>}
-          <a class="chip" href={site.github} aria-label="GitHub"><Icon name="code" /></a>
+          {site.linkedin && <a class="chip" href={site.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /></a>}
+          <a class="chip" href={site.github} aria-label="GitHub" target="_blank" rel="noopener noreferrer"><Icon name="code" /></a>
         </div>
       </footer>
     </div>

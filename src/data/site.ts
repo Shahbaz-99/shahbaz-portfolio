@@ -1,6 +1,6 @@
 // Single source of truth. Edit here; every page reads from this file.
 export const site = {
-  name: 'Sahbaj Ali', // matches official ID; goes by Shahbaz in person
+  name: 'Shahbaz Ali',
   role: 'Backend Developer Intern',
   headline: 'Backend Developer Intern @ Ethical Intelligence | API Development, Docker, AI Enthusiast',
   description:
@@ -14,7 +14,7 @@ export const site = {
   email: 'sahbaj.swn@gmail.com',
   github: 'https://github.com/Shahbaz-99',
   githubUser: 'Shahbaz-99',
-  linkedin: '', // add URL to show it
+  linkedin: 'https://www.linkedin.com/in/shahbaz-ali-tech/',
   resumeUrl: '', // e.g. '/resume.pdf' after adding the file to /public
   openTo: 'internships and full-time backend roles',
 };
@@ -39,6 +39,8 @@ export const projects: Project[] = [
   {
     slug: 'incident-management',
     title: 'Incident Management System',
+    year: '2025',
+    repo: 'https://github.com/Shahbaz-99/IMS-Incident-Management-System-',
     summary: 'Designed and developed a backend system for reporting, tracking, and resolving incidents across organizational roles.',
     stack: ['Python', 'Django', 'Django REST Framework', 'JWT', 'SQLite'],
     problem:
@@ -66,6 +68,8 @@ export const projects: Project[] = [
   {
     slug: 'menumint',
     title: 'MenuMint QR Code Generator',
+    year: '2025',
+    repo: 'https://github.com/Shahbaz-99/MenuMint-QR-Code-Generator',
     tagline: 'Download crisp, print-ready QR codes \u2014 perfect for standees, table cards, and menus.',
     summary: 'Built a web application that generates downloadable QR codes linked to restaurant menu URLs.',
     stack: ['Python', 'Django', 'QRCode Library'],
@@ -92,8 +96,10 @@ export const projects: Project[] = [
   {
     slug: 'employee-management',
     title: 'Employee Management System',
+    year: '2025',
+    repo: 'https://github.com/Shahbaz-99/Employee-Management-System',
     summary: 'Developed CLI and web-based employee management applications with complete CRUD operations and MySQL integration.',
-    stack: ['Python', 'Django', 'MySQL'],
+    stack: ['Python', 'Django', 'MySQL', 'DRF'],
     problem:
       'Developed CLI and web-based employee management applications with complete CRUD operations and MySQL integration.',
     highlights: [
@@ -165,6 +171,7 @@ export type Research = {
   kind: string;
   org: string;
   url: string;
+  repo?: string;
   tags: string[];
   stats: { value: string; label: string }[];
   toneError: { a: number; b: number };
@@ -184,6 +191,7 @@ export const research: Research[] = [
     kind: 'Internal demo',
     org: 'Ethical Intelligence',
     url: 'https://www.ethicalint.com/',
+    repo: 'https://github.com/Shahbaz-99/contrastive-lifecycle-tuning',
     tags: ['Side-by-side comparison', 'Contrastive loss', 'Lifecycle fine-tuning'],
     stats: [
       { value: '51% to 41%', label: 'Tone error on the full pool of novel candidates, baseline versus tuned model' },

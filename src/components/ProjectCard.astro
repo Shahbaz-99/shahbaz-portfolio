@@ -9,7 +9,10 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
   <div class="cap">
     <h3>{p.title}</h3>
     <p>{p.summary}</p>
-    <p class="meta">{p.stack.join(', ')}</p>
+    <div class="card-pills">
+      {p.stack.slice(0, 3).map((s) => <span class="card-pill">{s}</span>)}
+      {p.stack.length > 3 && <span class="card-pill more">+{p.stack.length - 3}</span>}
+    </div>
     <span class="go">View case study <i aria-hidden="true">→</i></span>
   </div>
 </a>

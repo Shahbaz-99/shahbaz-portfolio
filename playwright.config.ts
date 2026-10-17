@@ -9,7 +9,7 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: 'pnpm exec astro preview --host 127.0.0.1 --port 4321',
+        command: 'npx astro preview --host 127.0.0.1 --port 4321',
         url: 'http://127.0.0.1:4321/shahbaz-portfolio/',
         reuseExistingServer: true,
         timeout: 60000,
