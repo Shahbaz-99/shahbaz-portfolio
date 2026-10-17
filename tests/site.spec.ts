@@ -133,6 +133,65 @@ test.describe('motion', () => {
 test.describe('butterfly cursor', () => {
   test.use({ reducedMotion: 'no-preference' });
 
+  test('pauses all wing and hover animations while inactive and resumes on movement', async ({ page }) => {
+    await page.goto(`${base}/`);
+    const butterfly = page.locator('[data-bf-follower]');
+    const wings = butterfly.locator('.bf-wing');
+    await expect(wings).toHaveCount(4);
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'paused'),
+    )).toBe(true);
+    await expect(butterfly.locator('.bf-hover')).toHaveCSS('animation-play-state', 'paused');
+
+    await page.mouse.move(140, 160);
+    await expect(butterfly).toHaveAttribute('data-active', 'true');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'running'),
+    )).toBe(true);
+    await expect(butterfly.locator('.bf-hover')).toHaveCSS('animation-play-state', 'running');
+
+    await page.mouse.move(-1, -1);
+    await expect(butterfly).not.toHaveAttribute('data-active', 'true');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'paused'),
+    )).toBe(true);
+  });
+
+  test('pauses while the document is hidden and resumes when visible', async ({ page }) => {
+    await page.goto(`${base}/`);
+    const butterfly = page.locator('[data-bf-follower]');
+    const wings = butterfly.locator('.bf-wing');
+    await page.mouse.move(140, 160);
+    await expect(butterfly).toHaveAttribute('data-active', 'true');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'running'),
+    )).toBe(true);
+
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(butterfly).toHaveAttribute('data-page-visible', 'false');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'paused'),
+    )).toBe(true);
+    const positionWhileHidden = await butterfly.evaluate((element) => element.style.transform);
+    await page.mouse.move(240, 220);
+    await page.waitForTimeout(100);
+    await expect(butterfly).toHaveAttribute('data-active', 'true');
+    expect(await butterfly.evaluate((element) => element.style.transform)).toBe(positionWhileHidden);
+
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(butterfly).toHaveAttribute('data-page-visible', 'true');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'running'),
+    )).toBe(true);
+    await expect.poll(() => butterfly.evaluate((element) => element.style.transform)).not.toBe(positionWhileHidden);
+  });
+
   test('follows the cursor, flaps naturally, and does not block clicks', async ({ page }) => {
     await page.goto(`${base}/`);
     const butterfly = page.locator('[data-bf-follower]');
@@ -165,6 +224,11 @@ test.describe('butterfly cursor with reduced motion', () => {
 
   test('is hidden when reduced motion is requested', async ({ page }) => {
     await page.goto(`${base}/`);
-    await expect(page.locator('[data-bf-follower]')).toBeHidden();
+    const butterfly = page.locator('[data-bf-follower]');
+    await expect(butterfly).toBeHidden();
+    await expect(butterfly.locator('.bf-wing')).toHaveCount(4);
+    await expect.poll(() => butterfly.locator('.bf-wing').evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'paused'),
+    )).toBe(true);
   });
 });

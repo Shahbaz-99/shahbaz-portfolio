@@ -1,4 +1,4 @@
-<div class="bf-follower" aria-hidden="true" data-bf-follower>
+<div class="bf-follower" aria-hidden="true" data-bf-follower data-page-visible="true">
   <div class="bf-rotator" data-bf-rotator>
     <div class="bf-hover">
       <svg class="bf-butterfly" viewBox="0 0 44 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -116,6 +116,13 @@
     animation: bf-flap-right 205ms cubic-bezier(.45, 0, .55, 1) -24ms infinite;
   }
 
+  .bf-follower:not([data-active='true']) .bf-wing,
+  .bf-follower:not([data-active='true']) .bf-hover,
+  .bf-follower:not([data-page-visible='true']) .bf-wing,
+  .bf-follower:not([data-page-visible='true']) .bf-hover {
+    animation-play-state: paused;
+  }
+
   @keyframes bf-flap-left {
     0%, 100% { transform: rotateY(0deg); }
     50% { transform: rotateY(-66deg); }
@@ -155,6 +162,7 @@
     let lastFrame = 0;
     let frameId: number | null = null;
     let hasMoved = false;
+    let pointerInside = false;
 
     const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -178,6 +186,7 @@
       targetX = event.clientX + 14;
       targetY = event.clientY - 10;
       keepInViewport();
+      pointerInside = true;
 
       if (!hasMoved) {
         currentX = targetX;
@@ -186,11 +195,19 @@
       }
 
       butterfly.setAttribute('data-active', 'true');
-      if (frameId === null) frameId = requestAnimationFrame(animate);
+      if (!document.hidden && frameId === null) frameId = requestAnimationFrame(animate);
+    }
+
+    function stopAnimation() {
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      frameId = null;
+      lastFrame = 0;
     }
 
     function onMouseLeave() {
+      pointerInside = false;
       butterfly.removeAttribute('data-active');
+      stopAnimation();
     }
 
     function animate(now: number) {
@@ -218,21 +235,25 @@
 
     function onVisibilityChange() {
       if (document.hidden) {
-        if (frameId !== null) cancelAnimationFrame(frameId);
-        frameId = null;
-        lastFrame = 0;
-      } else if (hasMoved && frameId === null) {
+        butterfly.setAttribute('data-page-visible', 'false');
+        stopAnimation();
+      } else {
+        butterfly.setAttribute('data-page-visible', 'true');
+      }
+
+      if (!document.hidden && pointerInside && hasMoved && frameId === null) {
         frameId = requestAnimationFrame(animate);
       }
     }
 
     function cleanup() {
-      if (frameId !== null) cancelAnimationFrame(frameId);
+      stopAnimation();
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', onResize);
       document.removeEventListener('mouseleave', onMouseLeave);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       butterfly.removeAttribute('data-active');
+      butterfly.setAttribute('data-page-visible', 'false');
     }
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
