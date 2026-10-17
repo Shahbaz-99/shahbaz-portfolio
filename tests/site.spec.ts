@@ -76,6 +76,7 @@ test('GitHub activity rejects an invalid API response safely', async ({ page }) 
 test('home has greeting, projects and dock', async ({ page }) => {
   await page.goto(`${base}/`);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('here!');
+  await expect(page.getByText('Open to internships & job opportunities')).toBeVisible();
   await expect(page.locator('#projects .card')).toHaveCount(3);
   await expect(page.locator('#research .card')).toHaveCount(1);
   await expect(page.locator('.dock a')).toHaveCount(4);
@@ -126,5 +127,108 @@ test.describe('motion', () => {
     const card = page.locator('.card').first();
     await card.scrollIntoViewIfNeeded();
     await expect(card).toHaveClass(/\bin\b/);
+  });
+});
+
+test.describe('butterfly cursor', () => {
+  test.use({ reducedMotion: 'no-preference' });
+
+  test('pauses all wing and hover animations while inactive and resumes on movement', async ({ page }) => {
+    await page.goto(`${base}/`);
+    const butterfly = page.locator('[data-bf-follower]');
+    const wings = butterfly.locator('.bf-wing');
+    await expect(wings).toHaveCount(4);
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'paused'),
+    )).toBe(true);
+    await expect(butterfly.locator('.bf-hover')).toHaveCSS('animation-play-state', 'paused');
+
+    await page.mouse.move(140, 160);
+    await expect(butterfly).toHaveAttribute('data-active', 'true');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'running'),
+    )).toBe(true);
+    await expect(butterfly.locator('.bf-hover')).toHaveCSS('animation-play-state', 'running');
+
+    await page.mouse.move(-1, -1);
+    await expect(butterfly).not.toHaveAttribute('data-active', 'true');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'paused'),
+    )).toBe(true);
+  });
+
+  test('pauses while the document is hidden and resumes when visible', async ({ page }) => {
+    await page.goto(`${base}/`);
+    const butterfly = page.locator('[data-bf-follower]');
+    const wings = butterfly.locator('.bf-wing');
+    await page.mouse.move(140, 160);
+    await expect(butterfly).toHaveAttribute('data-active', 'true');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'running'),
+    )).toBe(true);
+
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(butterfly).toHaveAttribute('data-page-visible', 'false');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'paused'),
+    )).toBe(true);
+    const positionWhileHidden = await butterfly.evaluate((element) => element.style.transform);
+    await page.mouse.move(240, 220);
+    await page.waitForTimeout(100);
+    await expect(butterfly).toHaveAttribute('data-active', 'true');
+    expect(await butterfly.evaluate((element) => element.style.transform)).toBe(positionWhileHidden);
+
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(butterfly).toHaveAttribute('data-page-visible', 'true');
+    await expect.poll(() => wings.evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'running'),
+    )).toBe(true);
+    await expect.poll(() => butterfly.evaluate((element) => element.style.transform)).not.toBe(positionWhileHidden);
+  });
+
+  test('follows the cursor, flaps naturally, and does not block clicks', async ({ page }) => {
+    await page.goto(`${base}/`);
+    const butterfly = page.locator('[data-bf-follower]');
+    const wing = page.locator('.bf-fore-left');
+    await page.mouse.move(140, 160);
+    await expect(butterfly).toHaveAttribute('data-active', 'true');
+    await expect.poll(() => wing.evaluate((element) => getComputedStyle(element).animationDuration)).toBe('0.19s');
+    await expect.poll(() => butterfly.evaluate((element) => getComputedStyle(element).pointerEvents)).toBe('none');
+
+    const before = await butterfly.evaluate((element) => element.style.transform);
+    await page.mouse.move(240, 220);
+    await expect.poll(() => butterfly.evaluate((element) => element.style.transform)).not.toBe(before);
+
+    await page.mouse.move(0, 0);
+    await page.setViewportSize({ width: 320, height: 240 });
+    await expect.poll(() => butterfly.locator('svg').evaluate((svg) => {
+      const bounds = svg.getBoundingClientRect();
+      return bounds.left >= 0 && bounds.top >= 0 && bounds.right <= innerWidth && bounds.bottom <= innerHeight;
+    })).toBe(true);
+
+    const toggle = page.locator('[data-theme-toggle]');
+    const themeBefore = await page.locator('html').getAttribute('data-theme');
+    await toggle.click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', themeBefore === 'dark' ? 'light' : 'dark');
+  });
+});
+
+test.describe('butterfly cursor with reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' });
+
+  test('is hidden when reduced motion is requested', async ({ page }) => {
+    await page.goto(`${base}/`);
+    const butterfly = page.locator('[data-bf-follower]');
+    await expect(butterfly).toBeHidden();
+    await expect(butterfly.locator('.bf-wing')).toHaveCount(4);
+    await expect.poll(() => butterfly.locator('.bf-wing').evaluateAll((elements) =>
+      elements.every((element) => getComputedStyle(element).animationPlayState === 'paused'),
+    )).toBe(true);
   });
 });
