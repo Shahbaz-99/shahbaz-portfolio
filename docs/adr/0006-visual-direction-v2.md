@@ -1,5 +1,5 @@
-# ADR 0006: Paper-and-dock visual direction
-**Status:** Accepted (supersedes hero decision in ADR 0003)
+# ADR 0006: Visual direction
+**Status:** Accepted. The Picto direction below supersedes the paper-and-dock decision on the homepage only.
 **Context:** Owner wants a minimal, warm, personal look (paper texture, handwritten greeting, floating dock nav) with light and dark themes.
-**Decision:** Single-column 46rem layout; grain texture via inline SVG noise (no image request); Instrument Sans + Caveat (self-hosted); native wavy underlines and SVG-mask dividers; bottom dock with scroll-spy. Project covers are generated in CSS until real screenshots exist.
-**Consequences:** Still zero framework JS. Reference site used for inspiration only; no assets or copy reused.
+**Decision:** The non-homepage routes retain the paper-and-dock styling: single-column 46rem layout; grain texture via inline SVG noise (no image request); Instrument Sans + Caveat (self-hosted); native wavy underlines and SVG-mask dividers; bottom dock with scroll-spy. On the homepage only, use the owner's Picto design direction: Work Sans, the specified gray and purple palette, a gradient hero, sticky navbar, and redesigned section layouts. The homepage navbar and footer are also homepage-only; detail routes retain their current shared shell. Project covers remain generated in CSS until real screenshots exist; do not invent images or copy.
+**Consequences:** The homepage remains static Astro without a client-side framework. Existing case-study, experience, research, and architecture routes keep their existing styling and behavior. The Picto reference is used only for visual direction; no assets or copy are reused.

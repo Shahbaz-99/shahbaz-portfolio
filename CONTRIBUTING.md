@@ -7,6 +7,10 @@
 - Every completed and verified development task must be committed and pushed to `origin/dev`.
 - Promote reviewed changes to `main` only through an explicitly authorized merge or pull request. Production merges and deployments require explicit authorization; do not merge or deploy automatically.
 
+### Authorized Picto redesign exception
+
+For the Picto redesign only, work on a local `picto-redesign` branch created from `dev`. Keep the branch local and do not push unless the owner explicitly asks. Commit the spec updates first and pause for review; after approval, make one commit per implementation step and pause after each commit.
+
 ## Workflow
 
 1. Check the current branch, worktree, and remote state. Preserve existing changes; switch to `dev` only when safe.
