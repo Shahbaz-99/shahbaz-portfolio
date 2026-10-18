@@ -73,13 +73,37 @@ test('GitHub activity rejects an invalid API response safely', async ({ page }) 
   await expect(page.locator('[data-gh-list] li')).toHaveCount(0);
 });
 
-test('home has greeting, projects and dock', async ({ page }) => {
+test('home has greeting, projects and primary navigation', async ({ page }) => {
   await page.goto(`${base}/`);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('here!');
   await expect(page.getByText('Open to internships & job opportunities')).toBeVisible();
   await expect(page.locator('#projects .card')).toHaveCount(3);
   await expect(page.locator('#research .card')).toHaveCount(1);
-  await expect(page.locator('.dock a')).toHaveCount(4);
+  await expect(page.locator('.home-nav a')).toHaveCount(7);
+  await expect(page.locator('.home-theme-toggle')).toBeVisible();
+});
+
+test('home includes the new sections and contact form', async ({ page }) => {
+  await page.goto(`${base}/`);
+  await expect(page.locator('.hero-stat')).toHaveCount(3);
+  await expect(page.locator('#what-i-do .service-card')).toHaveCount(4);
+  await expect(page.locator('#process .process-card')).toHaveCount(4);
+  await expect(page.getByText('Have a project or opportunity in mind? Let\'s talk.').first()).toBeVisible();
+  await expect(page.locator('[data-contact-form] input[required]')).toHaveCount(3);
+  await expect(page.locator('[data-contact-form] textarea[required]')).toHaveCount(1);
+});
+
+test('contact form validates fields and shows mailto confirmation', async ({ page }) => {
+  await page.goto(`${base}/`);
+  await page.locator('[data-contact-form]').evaluate((form: HTMLFormElement) => form.requestSubmit());
+  await expect(page.locator('#contact-name')).toBeFocused();
+
+  await page.fill('#contact-name', 'Shahbaz');
+  await page.fill('#contact-email', 'shahbaz@example.com');
+  await page.fill('#contact-subject', 'Portfolio inquiry');
+  await page.fill('#contact-message', 'Please get in touch.');
+  await page.locator('[data-contact-form]').evaluate((form: HTMLFormElement) => form.requestSubmit());
+  await expect(page.locator('[data-contact-note]')).toHaveText('Your email app should open with the message ready to send.');
 });
 
 test('project card opens its case study', async ({ page }) => {
@@ -109,13 +133,17 @@ test('architecture page loads', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('How this site is built');
 });
 
-for (const width of [320, 390, 768, 1280, 1920]) {
+for (const width of [320, 360, 390, 768, 1280, 1920]) {
   test(`no horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     for (const path of pages) {
       await page.goto(path);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(overflow, path).toBeLessThanOrEqual(0);
+      if (path === `${base}/`) {
+        const contactRight = await page.locator('.home-nav-contact').evaluate((link) => link.getBoundingClientRect().right);
+        expect(contactRight, `Contact navigation at ${width}px`).toBeLessThanOrEqual(width);
+      }
     }
   });
 }

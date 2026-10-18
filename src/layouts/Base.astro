@@ -4,8 +4,8 @@ import '@fontsource-variable/caveat';
 import '../styles/global.css';
 import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
-interface Props { title?: string; description?: string; progress?: boolean }
-const { progress = false, title, description = site.description } = Astro.props;
+interface Props { title?: string; description?: string; progress?: boolean; homepage?: boolean }
+const { progress = false, homepage = false, title, description = site.description } = Astro.props;
 const full = title ? `${title} | ${site.name}` : `${site.name} | ${site.role}`;
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const nav = [
@@ -14,9 +14,17 @@ const nav = [
   { href: `${base}#experience`, icon: 'briefcase', label: 'Experience' },
   { href: `${base}#research`, icon: 'flask', label: 'Research' },
 ];
+const homeNav = [
+  { href: `${base}#top`, label: 'Home' },
+  { href: `${base}#projects`, label: 'Projects' },
+  { href: `${base}#experience`, label: 'Experience' },
+  { href: `${base}#research`, label: 'Research' },
+  { href: `${base}#what-i-do`, label: 'What I do' },
+  { href: `${base}#process`, label: 'Process' },
+];
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" class:list={{ 'home-document': homepage }}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -54,34 +62,74 @@ const nav = [
       })();
     </script>
   </head>
-  <body>
+  <body class:list={{ 'home-page': homepage }}>
     {progress && <div class="progress" aria-hidden="true"></div>}
     <a class="skip" href="#main">Skip to content</a>
-    <div class="wrap">
-      <main id="main"><slot /></main>
-      <footer class="site-footer">
-        <svg class="doodle" viewBox="0 0 160 90" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" aria-hidden="true">
-          <path d="M34 88c2-20 0-34 1-50M72 88c-1-24 2-40 0-56M120 88c2-18 4-28 6-42"/>
-          {[[35, 32], [72, 22], [126, 40]].map(([x, y]) => (
-            <g transform={`translate(${x} ${y})`}><circle r="2.5"/>{[0, 60, 120, 180, 240, 300].map((a) => <ellipse cx="0" cy="-7" rx="2.6" ry="5" transform={`rotate(${a})`}/>)}</g>
-          ))}
-        </svg>
-        <p>Built with Astro on Cloudflare Pages. <a class="lnk" href={`${base}architecture`}>How it's built</a></p>
-        <div class="chips">
-          <a class="chip" href={`mailto:${site.email}`} aria-label="Email"><Icon name="mail" /></a>
-          {site.linkedin && <a class="chip" href={site.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /></a>}
-          <a class="chip" href={site.github} aria-label="GitHub" target="_blank" rel="noopener noreferrer"><Icon name="code" /></a>
+    {homepage && (
+      <header class="home-header">
+        <div class="home-header-inner">
+          <a class="home-brand" href={`${base}#top`}>{site.name}</a>
+          <nav class="home-nav" aria-label="Main">
+            {homeNav.map((n) => <a href={n.href}>{n.label}</a>)}
+            <a class="home-nav-contact" href={`${base}#contact`}>Contact</a>
+          </nav>
+          <button class="home-theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+            <Icon class="sun" name="sun" />
+            <Icon class="moon" name="moon" />
+          </button>
         </div>
-      </footer>
-    </div>
-    <nav class="dock" aria-label="Main">
-      <div class="dock-items">
-        {nav.map((n) => <a href={n.href} aria-label={n.label} data-tip={n.label}><Icon name={n.icon} /></a>)}
-        <span class="sep" aria-hidden="true"></span>
-        <button type="button" data-theme-toggle data-tip="Theme" aria-label="Switch theme"><Icon class="sun" name="sun" /><Icon class="moon" name="moon" /></button>
-      </div>
-      <div class="ruler" aria-hidden="true"></div>
-    </nav>
+      </header>
+    )}
+    {homepage ? (
+      <>
+        <div class="wrap home-wrap"><main id="main"><slot /></main></div>
+        <footer class="home-footer">
+          <div class="home-footer-inner">
+            <a class="home-footer-name" href={`${base}#top`}>{site.name}</a>
+            <nav class="home-footer-links" aria-label="Footer">
+              {homeNav.map((n) => <a href={n.href}>{n.label}</a>)}
+              <a href={`${base}#contact`}>Contact</a>
+              <a href={`${base}architecture`}>How it's built</a>
+              <a href={`mailto:${site.email}`} aria-label="Email"><Icon name="mail" /></a>
+              {site.linkedin && <a href={site.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /></a>}
+              <a href={site.github} aria-label="GitHub" target="_blank" rel="noopener noreferrer"><Icon name="code" /></a>
+            </nav>
+            <div class="home-footer-meta">
+              <p>Built with Astro on Cloudflare Pages.</p>
+              <p>© {new Date().getFullYear()} {site.name}</p>
+            </div>
+          </div>
+        </footer>
+      </>
+    ) : (
+      <>
+        <div class="wrap">
+          <main id="main"><slot /></main>
+          <footer class="site-footer">
+            <svg class="doodle" viewBox="0 0 160 90" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" aria-hidden="true">
+              <path d="M34 88c2-20 0-34 1-50M72 88c-1-24 2-40 0-56M120 88c2-18 4-28 6-42"/>
+              {[[35, 32], [72, 22], [126, 40]].map(([x, y]) => (
+                <g transform={`translate(${x} ${y})`}><circle r="2.5"/>{[0, 60, 120, 180, 240, 300].map((a) => <ellipse cx="0" cy="-7" rx="2.6" ry="5" transform={`rotate(${a})`}/>)}</g>
+              ))}
+            </svg>
+            <p>Built with Astro on Cloudflare Pages. <a class="lnk" href={`${base}architecture`}>How it's built</a></p>
+            <div class="chips">
+              <a class="chip" href={`mailto:${site.email}`} aria-label="Email"><Icon name="mail" /></a>
+              {site.linkedin && <a class="chip" href={site.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /></a>}
+              <a class="chip" href={site.github} aria-label="GitHub" target="_blank" rel="noopener noreferrer"><Icon name="code" /></a>
+            </div>
+          </footer>
+        </div>
+        <nav class="dock" aria-label="Main">
+          <div class="dock-items">
+            {nav.map((n) => <a href={n.href} aria-label={n.label} data-tip={n.label}><Icon name={n.icon} /></a>)}
+            <span class="sep" aria-hidden="true"></span>
+            <button type="button" data-theme-toggle data-tip="Theme" aria-label="Switch theme"><Icon class="sun" name="sun" /><Icon class="moon" name="moon" /></button>
+          </div>
+          <div class="ruler" aria-hidden="true"></div>
+        </nav>
+      </>
+    )}
     <script>import '../scripts/ui';</script>
   </body>
 </html>

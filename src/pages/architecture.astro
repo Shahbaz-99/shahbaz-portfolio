@@ -6,7 +6,7 @@ import Base from '../layouts/Base.astro';
     <h1>How this site is built</h1>
     <p>A static site, built once and served from a global CDN. There is no server to wait on, so most of the latency work is about sending less.</p>
 
-    <div class="diagram">
+    <div class="diagram" tabindex="0">
       <svg viewBox="0 0 760 250" role="img" aria-label="Delivery pipeline: git push to GitHub Actions to Cloudflare Pages CDN to visitor. Demo APIs run separately on a Docker VPS and are linked, not loaded.">
         <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker></defs>
         <rect class="box" x="10" y="30" width="150" height="70" rx="6"/><text x="85" y="62" text-anchor="middle">git push</text><text class="sub" x="85" y="82" text-anchor="middle">GitHub, main</text>
