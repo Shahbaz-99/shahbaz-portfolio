@@ -2,7 +2,7 @@
 export const site = {
   name: 'Shahbaz Ali',
   role: 'Backend Developer Intern',
-  headline: 'Backend Developer Intern @ Ethical Intelligence | API Development, Docker, AI Enthusiast',
+  headline: 'Software Developer Intern @ Ethical Intelligence | API Development, Docker, AI Enthusiast',
   description:
     'Computer Science Engineering student with hands-on experience in Python, Django, and Django REST Framework. Skilled in developing REST APIs, working with databases, and deploying applications using Docker.',
   location: 'Bhopal, India',
