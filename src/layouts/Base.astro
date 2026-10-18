@@ -3,7 +3,6 @@ import '@fontsource-variable/instrument-sans';
 import '@fontsource-variable/caveat';
 import '../styles/global.css';
 import Icon from '../components/Icon.astro';
-import ButterflyCursor from '../components/ButterflyCursor.astro';
 import { site } from '../data/site';
 interface Props { title?: string; description?: string; progress?: boolean }
 const { progress = false, title, description = site.description } = Astro.props;
@@ -84,6 +83,5 @@ const nav = [
       <div class="ruler" aria-hidden="true"></div>
     </nav>
     <script>import '../scripts/ui';</script>
-    <ButterflyCursor />
   </body>
 </html>
