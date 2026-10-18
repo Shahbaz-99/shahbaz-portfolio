@@ -196,8 +196,8 @@ test.describe('butterfly cursor', () => {
     await page.goto(`${base}/`);
     const butterfly = page.locator('[data-bf-follower]');
     const wing = page.locator('.bf-fore-left');
-    await expect(butterfly.locator('svg')).toHaveCSS('width', '38px');
-    await expect(butterfly.locator('svg')).toHaveCSS('height', '31px');
+    await expect(butterfly.locator('svg')).toHaveCSS('width', '28px');
+    await expect(butterfly.locator('svg')).toHaveCSS('height', '23px');
     await page.mouse.move(140, 160);
     await expect(butterfly).toHaveAttribute('data-active', 'true');
     await expect.poll(() => wing.evaluate((element) => getComputedStyle(element).animationDuration)).toBe('0.19s');
@@ -221,6 +221,31 @@ test.describe('butterfly cursor', () => {
     const themeBefore = await page.locator('html').getAttribute('data-theme');
     await toggle.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', themeBefore === 'dark' ? 'light' : 'dark');
+  });
+});
+
+test.describe('butterfly flight path', () => {
+  test.use({ reducedMotion: 'no-preference' });
+
+  test('drifts in both horizontal and vertical directions around the cursor', async ({ page }) => {
+    await page.goto(`${base}/`);
+    const butterfly = page.locator('[data-bf-follower]');
+    await page.mouse.move(160, 180);
+    await expect(butterfly).toHaveAttribute('data-active', 'true');
+
+    const positions: [number, number][] = [];
+    for (let i = 0; i < 10; i++) {
+      positions.push(await butterfly.evaluate((element) => {
+        const match = /translate3d\(([-\d.]+)px, ([-\d.]+)px/.exec(element.style.transform);
+        return [Number(match?.[1]), Number(match?.[2])];
+      }));
+      await page.waitForTimeout(100);
+    }
+
+    const xValues = positions.map(([x]) => x);
+    const yValues = positions.map(([, y]) => y);
+    expect(Math.max(...xValues) - Math.min(...xValues)).toBeGreaterThan(2);
+    expect(Math.max(...yValues) - Math.min(...yValues)).toBeGreaterThan(1.5);
   });
 });
 
