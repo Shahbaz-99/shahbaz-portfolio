@@ -72,24 +72,24 @@
 
   .bf-rotator {
     position: absolute;
-    top: -18px;
-    left: -22px;
-    width: 44px;
-    height: 36px;
+    top: -15.5px;
+    left: -19px;
+    width: 38px;
+    height: 31px;
     transform-origin: center;
     will-change: transform;
   }
 
   .bf-hover {
-    width: 44px;
-    height: 36px;
+    width: 38px;
+    height: 31px;
     animation: bf-hover 2.8s ease-in-out infinite;
   }
 
   .bf-butterfly {
     display: block;
-    width: 44px;
-    height: 36px;
+    width: 38px;
+    height: 31px;
     overflow: visible;
     filter: drop-shadow(0 1px 1.4px rgb(51 5 12 / 38%));
   }
@@ -165,6 +165,7 @@
     let pointerInside = false;
 
     const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+    const followTime = 280;
 
     function keepInViewport() {
       const xMargin = Math.min(28, window.innerWidth / 2);
@@ -213,7 +214,7 @@
     function animate(now: number) {
       const elapsed = lastFrame ? Math.min(now - lastFrame, 50) : 16;
       lastFrame = now;
-      const easing = 1 - Math.exp(-elapsed / 72);
+      const easing = 1 - Math.exp(-elapsed / followTime);
       const previousX = currentX;
       currentX += (targetX - currentX) * easing;
       currentY += (targetY - currentY) * easing;

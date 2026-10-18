@@ -196,6 +196,8 @@ test.describe('butterfly cursor', () => {
     await page.goto(`${base}/`);
     const butterfly = page.locator('[data-bf-follower]');
     const wing = page.locator('.bf-fore-left');
+    await expect(butterfly.locator('svg')).toHaveCSS('width', '38px');
+    await expect(butterfly.locator('svg')).toHaveCSS('height', '31px');
     await page.mouse.move(140, 160);
     await expect(butterfly).toHaveAttribute('data-active', 'true');
     await expect.poll(() => wing.evaluate((element) => getComputedStyle(element).animationDuration)).toBe('0.19s');
@@ -204,6 +206,9 @@ test.describe('butterfly cursor', () => {
     const before = await butterfly.evaluate((element) => element.style.transform);
     await page.mouse.move(240, 220);
     await expect.poll(() => butterfly.evaluate((element) => element.style.transform)).not.toBe(before);
+    await page.waitForTimeout(100);
+    const laggingX = await butterfly.evaluate((element) => Number(/translate3d\(([-\d.]+)px/.exec(element.style.transform)?.[1]));
+    expect(laggingX).toBeLessThan(240 + 14 - 30);
 
     await page.mouse.move(0, 0);
     await page.setViewportSize({ width: 320, height: 240 });
