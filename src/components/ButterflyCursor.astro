@@ -72,24 +72,24 @@
 
   .bf-rotator {
     position: absolute;
-    top: -15.5px;
-    left: -19px;
-    width: 38px;
-    height: 31px;
+    top: -11.5px;
+    left: -14px;
+    width: 28px;
+    height: 23px;
     transform-origin: center;
     will-change: transform;
   }
 
   .bf-hover {
-    width: 38px;
-    height: 31px;
+    width: 28px;
+    height: 23px;
     animation: bf-hover 2.8s ease-in-out infinite;
   }
 
   .bf-butterfly {
     display: block;
-    width: 38px;
-    height: 31px;
+    width: 28px;
+    height: 23px;
     overflow: visible;
     filter: drop-shadow(0 1px 1.4px rgb(51 5 12 / 38%));
   }
@@ -168,8 +168,8 @@
     const followTime = 280;
 
     function keepInViewport() {
-      const xMargin = Math.min(28, window.innerWidth / 2);
-      const yMargin = Math.min(26, window.innerHeight / 2);
+      const xMargin = Math.min(34, window.innerWidth / 2);
+      const yMargin = Math.min(32, window.innerHeight / 2);
       targetX = clamp(targetX, xMargin, window.innerWidth - xMargin);
       targetY = clamp(targetY, yMargin, window.innerHeight - yMargin);
       currentX = clamp(currentX, xMargin, window.innerWidth - xMargin);
@@ -215,18 +215,24 @@
       const elapsed = lastFrame ? Math.min(now - lastFrame, 50) : 16;
       lastFrame = now;
       const easing = 1 - Math.exp(-elapsed / followTime);
+      const flightX = Math.sin(now * 0.0024) * 4;
+      const flightY = Math.sin(now * 0.0031 + 1.2) * 3;
+      const desiredX = targetX + flightX;
+      const desiredY = targetY + flightY;
       const previousX = currentX;
-      currentX += (targetX - currentX) * easing;
-      currentY += (targetY - currentY) * easing;
+      const previousY = currentY;
+      currentX += (desiredX - currentX) * easing;
+      currentY += (desiredY - currentY) * easing;
 
       const speedX = (currentX - previousX) / elapsed;
-      const targetBank = clamp(speedX * 13, -18, 18);
+      const speedY = (currentY - previousY) / elapsed;
+      const targetBank = clamp(speedX * 13 - speedY * 8, -18, 18);
       currentBank += (targetBank - currentBank) * (1 - Math.exp(-elapsed / 100));
 
       butterfly.style.transform = `translate3d(${currentX.toFixed(1)}px, ${currentY.toFixed(1)}px, 0)`;
       wingRotator.style.transform = `rotate(${currentBank.toFixed(1)}deg)`;
 
-      if (Math.abs(targetX - currentX) > 0.2 || Math.abs(targetY - currentY) > 0.2 || Math.abs(currentBank) > 0.1) {
+      if (pointerInside) {
         frameId = requestAnimationFrame(animate);
       } else {
         frameId = null;
