@@ -1,5 +1,6 @@
 ---
 import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/caveat';
 import '../styles/global.css';
 import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
@@ -17,7 +18,6 @@ const homeNav = [
   { href: `${base}#top`, label: 'Home' },
   { href: `${base}#projects`, label: 'Projects' },
   { href: `${base}#experience`, label: 'Experience' },
-  { href: `${base}#skills`, label: 'Skills' },
   { href: `${base}#research`, label: 'Research' },
   { href: `${base}#what-i-do`, label: 'What I do' },
   { href: `${base}#process`, label: 'Process' },
@@ -31,8 +31,8 @@ const homeNav = [
     <title>{full}</title>
     <meta name="description" content={description} />
     <meta name="author" content={site.name} />
-    <meta name="theme-color" content="#F6F0E5" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#111A28" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f4ecdd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#181817" media="(prefers-color-scheme: dark)" />
     <link rel="canonical" href={`https://shahbaz-99.github.io${Astro.url.pathname}`} />
     
     <!-- Open Graph / Facebook / LinkedIn -->
@@ -71,6 +71,7 @@ const homeNav = [
           <a class="home-brand" href={`${base}#top`}>{site.name}</a>
           <nav class="home-nav" aria-label="Main">
             {homeNav.map((n) => <a href={n.href}>{n.label}</a>)}
+            <a class="home-nav-contact" href={`${base}#contact`}>Contact</a>
           </nav>
           <button class="home-theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
             <Icon class="sun" name="sun" />
@@ -87,6 +88,7 @@ const homeNav = [
             <a class="home-footer-name" href={`${base}#top`}>{site.name}</a>
             <nav class="home-footer-links" aria-label="Footer">
               {homeNav.map((n) => <a href={n.href}>{n.label}</a>)}
+              <a href={`${base}#contact`}>Contact</a>
               <a href={`${base}architecture`}>How it's built</a>
               <a href={`mailto:${site.email}`} aria-label="Email"><Icon name="mail" /></a>
               {site.linkedin && <a href={site.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /></a>}
