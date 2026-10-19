@@ -5,13 +5,8 @@ import ProjectCard from '../components/ProjectCard.astro';
 import ResearchCard from '../components/ResearchCard.astro';
 import GitHubActivity from '../components/GitHubActivity.astro';
 import { site, projects, experience, education, research, skills, aiWork } from '../data/site';
+const stack = skills.flatMap((s) => s.items).join(', ');
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
-const skillGroups: Record<string, string> = {
-  Backend: 'Backend engineering',
-  Data: 'Data & databases',
-  Delivery: 'DevOps & infrastructure',
-  Testing: 'Testing & tools',
-};
 const heroStats = [
   { value: 'Jan 2025', detail: 'At Ethical Intelligence' },
   { value: '3', detail: 'Projects built' },
@@ -95,7 +90,7 @@ const processSteps = [
   </section>
 
   <section id="projects" class="block home-projects" aria-labelledby="h-projects">
-    <h2 class="label reveal" id="h-projects">Selected projects</h2>
+    <h2 class="label reveal" id="h-projects">Best projects</h2>
     <div class="cards">{projects.map((p, i) => <ProjectCard p={p} i={i} />)}</div>
     <div class="reveal"><GitHubActivity /></div>
   </section>
@@ -118,24 +113,21 @@ const processSteps = [
         </li>
       ))}
     </ul>
-  </section>
-
-  <section id="skills" class="block home-skills" aria-labelledby="h-skills">
-    <div class="home-section-heading">
-      <p class="section-kicker">Engineering toolkit</p>
-      <h2 class="label" id="h-skills">Tools for thoughtful software</h2>
-      <p>Technologies used across backend development, data, delivery, and testing.</p>
-    </div>
-    <div class="skills-grid">
-      {skills.map((group, index) => (
-        <article class="skill-category" style={`--skill-index:${index}`}>
-          <span class="skill-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-          <h3 class="skill-label">{skillGroups[group.group] ?? group.group}</h3>
-          <ul class="skill-tags">
-            {group.items.map((item) => <li class="skill-tag">{item}</li>)}
-          </ul>
-        </article>
-      ))}
+    <p class="meta reveal">Stack: {stack}</p>
+    <div class="skills-overview reveal">
+      <h3 class="skills-title">Technical Skills</h3>
+      <div class="skills-grid">
+        {skills.map((s) => (
+          <div class="skill-category">
+            <span class="skill-label">{s.group}</span>
+            <div class="skill-tags">
+              {s.items.map((it) => (
+                <span class="skill-tag">{it}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -202,4 +194,44 @@ const processSteps = [
     </ol>
   </section>
 
+  <section class="home-contact-cta" aria-labelledby="h-contact-cta">
+    <div class="home-contact-cta-inner">
+      <h2 id="h-contact-cta">Have a project or opportunity in mind? Let's talk.</h2>
+      <a class="btn-light" href="#contact">Contact <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <section id="contact" class="block home-contact" aria-labelledby="h-contact">
+    <div class="contact-card">
+      <div class="contact-details">
+        <h2 class="label" id="h-contact">Contact</h2>
+        <p class="contact-intro">Choose the channel that works best.</p>
+        <ul class="contact-list">
+          <li>
+            <span class="contact-icon"><Icon name="mail" /></span>
+            <a href={`mailto:${site.email}`}>{site.email}</a>
+          </li>
+          {site.linkedin && (
+            <li>
+              <span class="contact-icon"><Icon name="linkedin" /></span>
+              <a href={site.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            </li>
+          )}
+          <li>
+            <span class="contact-icon"><Icon name="code" /></span>
+            <a href={site.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+          </li>
+          <li>
+            <span class="contact-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+                <circle cx="12" cy="10" r="2.5" />
+              </svg>
+            </span>
+            <span>Greater Bhopal Area India</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
 </Base>

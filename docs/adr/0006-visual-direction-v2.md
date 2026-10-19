@@ -1,5 +1,5 @@
 # ADR 0006: Site-wide Picto visual direction
-**Status:** Superseded by [ADR 0007](./0007-premium-portfolio-visual-direction.md).
+**Status:** Accepted. This decision supersedes the paper-and-dock direction across the site.
 **Context:** Owner wants a minimal, warm, personal look (paper texture, handwritten greeting, floating dock nav) with light and dark themes.
 **Decision:** Use the owner's Picto design direction across the homepage and all inner routes: Work Sans, the specified gray and purple palette, layered gradient backgrounds, glass surfaces, shared sticky navigation and footer, and consistent responsive page primitives. Use the same light and dark theme tokens throughout. Motion remains CSS-first, is progressively enhanced, and respects `prefers-reduced-motion`; content remains visible when JavaScript is unavailable. Project and research covers remain generated in CSS until real screenshots exist; do not invent images or copy.
 **Consequences:** The site remains static Astro without a client-side framework. Homepage, project, experience, research, architecture, and not-found routes share the Picto design system while retaining their existing content, links, and routing. The Picto reference is used only for visual direction; no assets or copy are reused.
