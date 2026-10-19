@@ -205,7 +205,7 @@ const processSteps = [
     <div class="contact-card">
       <div class="contact-details">
         <h2 class="label" id="h-contact">Contact</h2>
-        <p class="contact-intro">Choose the channel that works best.</p>
+        <p class="contact-intro">Have a project or opportunity in mind? Let's talk.</p>
         <ul class="contact-list">
           <li>
             <span class="contact-icon"><Icon name="mail" /></span>
@@ -231,7 +231,60 @@ const processSteps = [
             <span>Greater Bhopal Area India</span>
           </li>
         </ul>
+        <nav class="contact-socials" aria-label="Social links">
+          <a class="chip" href={`mailto:${site.email}`} aria-label="Email"><Icon name="mail" /></a>
+          {site.linkedin && <a class="chip" href={site.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /></a>}
+          <a class="chip" href={site.github} aria-label="GitHub" target="_blank" rel="noopener noreferrer"><Icon name="code" /></a>
+        </nav>
       </div>
+      <form class="contact-form" data-contact-form data-email={site.email}>
+        <label for="contact-name">Name*</label>
+        <input id="contact-name" name="name" type="text" autocomplete="name" required />
+        <label for="contact-email">Email*</label>
+        <input id="contact-email" name="email" type="email" autocomplete="email" required />
+        <label for="contact-subject">Subject*</label>
+        <input id="contact-subject" name="subject" type="text" required />
+        <label for="contact-message">Message*</label>
+        <textarea id="contact-message" name="message" rows="5" required></textarea>
+        <button class="btn-primary contact-submit" type="submit">Submit <span aria-hidden="true">→</span></button>
+        <p class="contact-note" data-contact-note role="status" aria-live="polite"></p>
+      </form>
     </div>
   </section>
 </Base>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+
+  if (form) {
+    const note = form.querySelector<HTMLElement>('[data-contact-note]');
+    const recipient = form.dataset.email;
+    if (!note || !recipient) throw new Error('The contact form is missing its status message or email recipient.');
+
+    form.addEventListener('input', (event) => {
+      const field = event.target;
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) field.setCustomValidity('');
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const fields = [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]')];
+      fields.forEach((field) => field.setCustomValidity(field.value.trim() ? '' : 'This field is required.'));
+      if (!form.reportValidity()) return;
+
+      const data = new FormData(form);
+      const value = (key: string) => {
+        const field = data.get(key);
+        if (typeof field !== 'string') throw new Error(`The contact form is missing the ${key} field.`);
+        return field.trim();
+      };
+      const name = value('name');
+      const email = value('email');
+      const subject = value('subject');
+      const message = value('message');
+      const body = `Name: ${name}\nEmail: ${email}\n\n${message}`;
+      note.textContent = 'Your email app should open with the message ready to send.';
+      window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    });
+  }
+</script>

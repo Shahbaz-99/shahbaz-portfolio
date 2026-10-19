@@ -61,18 +61,8 @@ if (clocks.length) {
     el.textContent = (formatters.get(el.dataset.clock ?? '') ?? localClock).format(new Date());
     el.closest('[data-clock-wrap]')?.setAttribute('data-ready', '');
   });
-  let interval: number | undefined;
-  const updateClock = () => {
-    if (document.hidden) {
-      if (interval !== undefined) window.clearInterval(interval);
-      interval = undefined;
-      return;
-    }
-    tick();
-    if (interval === undefined) interval = window.setInterval(tick, 1000);
-  };
-  updateClock();
-  document.addEventListener('visibilitychange', updateClock);
+  tick();
+  setInterval(tick, 1000);
 }
 
 // Reveal on scroll

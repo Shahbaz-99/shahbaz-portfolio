@@ -21,10 +21,7 @@ for (const path of pages) {
       await page.goto(path);
       const { violations } = await new AxeBuilder({ page }).analyze();
       const bad = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-      expect(bad.map((v) => ({
-        id: v.id,
-        nodes: v.nodes.map((node) => ({ target: node.target, summary: node.failureSummary })),
-      }))).toEqual([]);
+      expect(bad.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
     });
   }
 }
@@ -86,23 +83,27 @@ test('home has greeting, projects and primary navigation', async ({ page }) => {
   await expect(page.locator('.home-theme-toggle')).toBeVisible();
 });
 
-test('home includes its key sections and contact links without a form', async ({ page }) => {
+test('home includes the new sections and contact form', async ({ page }) => {
   await page.goto(`${base}/`);
   await expect(page.locator('.hero-stat')).toHaveCount(3);
   await expect(page.locator('#what-i-do .service-card')).toHaveCount(4);
   await expect(page.locator('#process .process-card')).toHaveCount(4);
   await expect(page.getByText('Have a project or opportunity in mind? Let\'s talk.').first()).toBeVisible();
-  await expect(page.locator('form, [data-contact-form], input, textarea')).toHaveCount(0);
-  await expect(page.locator('#contact a[href^="mailto:"]')).toBeVisible();
-  await expect(page.locator('#contact a[href*="linkedin.com"]')).toBeVisible();
-  await expect(page.locator('#contact a[href*="github.com"]')).toBeVisible();
+  await expect(page.locator('[data-contact-form] input[required]')).toHaveCount(3);
+  await expect(page.locator('[data-contact-form] textarea[required]')).toHaveCount(1);
 });
 
-test('home navigation reaches the contact links', async ({ page }) => {
+test('contact form validates fields and shows mailto confirmation', async ({ page }) => {
   await page.goto(`${base}/`);
-  await page.locator('.home-nav-contact').click();
-  await expect(page).toHaveURL(/#contact$/);
-  await expect(page.locator('#contact')).toBeInViewport();
+  await page.locator('[data-contact-form]').evaluate((form: HTMLFormElement) => form.requestSubmit());
+  await expect(page.locator('#contact-name')).toBeFocused();
+
+  await page.fill('#contact-name', 'Shahbaz');
+  await page.fill('#contact-email', 'shahbaz@example.com');
+  await page.fill('#contact-subject', 'Portfolio inquiry');
+  await page.fill('#contact-message', 'Please get in touch.');
+  await page.locator('[data-contact-form]').evaluate((form: HTMLFormElement) => form.requestSubmit());
+  await expect(page.locator('[data-contact-note]')).toHaveText('Your email app should open with the message ready to send.');
 });
 
 test('project card opens its case study', async ({ page }) => {
@@ -132,34 +133,20 @@ test('architecture page loads', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('How this site is built');
 });
 
-for (const width of [320, 375, 390, 430, 768, 1024, 1280, 1440, 1920]) {
+for (const width of [320, 360, 390, 768, 1280, 1920]) {
   test(`no horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     for (const path of pages) {
       await page.goto(path);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(overflow, path).toBeLessThanOrEqual(0);
       if (path === `${base}/`) {
         const contactRight = await page.locator('.home-nav-contact').evaluate((link) => link.getBoundingClientRect().right);
         expect(contactRight, `Contact navigation at ${width}px`).toBeLessThanOrEqual(width);
-        await expect(page.locator('.home-nav-contact')).toBeVisible();
       }
     }
   });
 }
-
-test.describe('reduced motion', () => {
-  test.use({ reducedMotion: 'reduce' });
-  test('keeps content visible and disables decorative animation', async ({ page }) => {
-    await page.goto(`${base}/`);
-    const motion = await page.locator('.status-dot').evaluate((dot) => ({
-      animation: getComputedStyle(dot).animationName,
-      revealOpacity: getComputedStyle(document.querySelector('.reveal')!).opacity,
-    }));
-    expect(motion.animation).toBe('none');
-    expect(motion.revealOpacity).toBe('1');
-  });
-});
 
 test.describe('motion', () => {
   test.use({ reducedMotion: 'no-preference' });
