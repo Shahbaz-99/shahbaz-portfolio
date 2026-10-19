@@ -83,34 +83,50 @@ test('home has greeting, projects and primary navigation', async ({ page }) => {
   await expect(page.locator('#projects .card')).toHaveCount(3);
   await expect(page.locator('#research .card')).toHaveCount(1);
   await expect(page.locator('.home-nav a')).toHaveCount(7);
+  await expect(page.locator('.home-nav a[href$="#skills"]')).toHaveText('Skills');
   await expect(page.locator('.home-theme-toggle')).toBeVisible();
 });
 
-test('home includes its key sections and contact links without a form', async ({ page }) => {
+test('home keeps key sections and social contact links without a contact section or form', async ({ page }) => {
   await page.goto(`${base}/`);
   await expect(page.locator('.hero-stat')).toHaveCount(3);
   await expect(page.locator('#what-i-do .service-card')).toHaveCount(4);
   await expect(page.locator('#process .process-card')).toHaveCount(4);
-  await expect(page.getByText('Have a project or opportunity in mind? Let\'s talk.').first()).toBeVisible();
-  await expect(page.locator('form, [data-contact-form], input, textarea')).toHaveCount(0);
-  await expect(page.locator('#contact a[href^="mailto:"]')).toBeVisible();
-  await expect(page.locator('#contact a[href*="linkedin.com"]')).toBeVisible();
-  await expect(page.locator('#contact a[href*="github.com"]')).toBeVisible();
+  await expect(page.locator('#skills .skill-category')).toHaveCount(4);
+  await expect(page.locator('#skills .skill-label')).toHaveText([
+    'Backend engineering',
+    'Data & databases',
+    'DevOps & infrastructure',
+    'Testing & tools',
+  ]);
+  await expect(page.locator('form, [data-contact-form], input, textarea, #contact, a[href$="#contact"]')).toHaveCount(0);
+  for (const label of ['Email', 'LinkedIn', 'GitHub']) {
+    await expect(page.locator(`.home-page .hero-cta-group .chips a[aria-label="${label}"]`)).toBeVisible();
+    await expect(page.locator(`.home-page .home-footer-links a[aria-label="${label}"]`)).toBeVisible();
+  }
 });
 
-test('home navigation reaches the contact links', async ({ page }) => {
+test('home navigation reaches skills', async ({ page }) => {
   await page.goto(`${base}/`);
-  await page.locator('.home-nav-contact').click();
-  await expect(page).toHaveURL(/#contact$/);
-  await expect(page.locator('#contact')).toBeInViewport();
+  await page.locator('.home-nav a[href$="#skills"]').click();
+  await expect(page).toHaveURL(/#skills$/);
+  await expect(page.locator('#skills')).toBeInViewport();
 });
 
 test('project card opens its case study', async ({ page }) => {
   await page.goto(`${base}/`);
-  await page.locator('.card').first().click();
+  await page.locator('.project-detail-link').first().click();
   await expect(page).toHaveURL(/\/projects\/incident-management$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Incident Management System');
   await expect(page.getByRole('heading', { name: 'Key highlights' })).toBeVisible();
+});
+
+test('project cards provide distinct case-study and repository links', async ({ page }) => {
+  await page.goto(`${base}/`);
+  await expect(page.locator('.project-detail-link')).toHaveCount(3);
+  await expect(page.locator('.project-source-link')).toHaveCount(3);
+  await expect(page.locator('.project-source-link').first()).toHaveAttribute('href', 'https://github.com/Shahbaz-99/IMS-Incident-Management-System-');
+  await expect(page.locator('.project-source-link').first()).toHaveAttribute('rel', 'noopener noreferrer');
 });
 
 test('experience item opens its detail page', async ({ page }) => {
@@ -140,9 +156,13 @@ for (const width of [320, 375, 390, 430, 768, 1024, 1280, 1440, 1920]) {
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow, path).toBeLessThanOrEqual(0);
       if (path === `${base}/`) {
-        const contactRight = await page.locator('.home-nav-contact').evaluate((link) => link.getBoundingClientRect().right);
-        expect(contactRight, `Contact navigation at ${width}px`).toBeLessThanOrEqual(width);
-        await expect(page.locator('.home-nav-contact')).toBeVisible();
+        const navLinks = page.locator('.home-nav a');
+        await expect(navLinks).toHaveCount(7);
+        for (const link of await navLinks.all()) {
+          await expect(link).toBeVisible();
+          const right = await link.evaluate((element) => element.getBoundingClientRect().right);
+          expect(right, `Navigation link at ${width}px`).toBeLessThanOrEqual(width);
+        }
       }
     }
   });
