@@ -85,6 +85,5 @@ if (reveals.length) {
       }
     }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
     reveals.forEach((el) => io.observe(el));
-    root.classList.add('reveal-ready');
   } else reveals.forEach((el) => el.classList.add('in'));
 }
