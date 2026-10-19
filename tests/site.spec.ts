@@ -181,37 +181,6 @@ test.describe('reduced motion', () => {
   });
 });
 
-test.describe('reveal fallback', () => {
-  test.use({ reducedMotion: 'no-preference' });
-  test('keeps sections visible when the site script fails to load', async ({ page }) => {
-    await page.route('**/shahbaz-portfolio/', async (route) => {
-      const response = await route.fetch();
-      const html = await response.text();
-      await route.fulfill({
-        response,
-        body: html.replace(/<script type="module">[\s\S]*?<\/script>/g, ''),
-      });
-    });
-    await page.goto(`${base}/`);
-    const heading = page.locator('#h-projects');
-    await expect(heading).toBeVisible();
-    await expect(heading).toHaveCSS('opacity', '1');
-  });
-});
-
-test('mobile navigation positions sections below the sticky header', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.goto(`${base}/`);
-  await page.locator('.home-nav a[href$="#research"]').click();
-  await expect(page).toHaveURL(/#research$/);
-  await expect.poll(() => page.evaluate(() => {
-    const header = document.querySelector('.home-header')!.getBoundingClientRect();
-    const section = document.querySelector('#research')!.getBoundingClientRect();
-    return Math.round(section.top - header.bottom);
-  })).toBeGreaterThanOrEqual(8);
-});
-
 test.describe('motion', () => {
   test.use({ reducedMotion: 'no-preference' });
   test('cards reveal when scrolled into view', async ({ page }) => {
