@@ -1,13 +1,26 @@
 ---
 import type { Project } from '../data/site';
-const { p, i = 0, large = false } = Astro.props as { p: Project; i?: number; large?: boolean };
-const base = [[70, 52, 62], [58, 74, 46], [66, 44, 72]][i % 3];
-const rows = large ? [...base, 56, 68] : base;
+const { p, large = false } = Astro.props as { p: Project; large?: boolean };
 ---
 <div class={`cover${large ? ' lg' : ''}`} style={`view-transition-name: cover-${p.slug}`}>
   {p.year && <span class="year">{p.year}</span>}
   <div class="mock" aria-hidden="true">
-    <b></b>
-    {rows.map((w) => <div class="mrow"><i style={`width:${w}%`}></i><em></em></div>)}
+    {p.flow ? (
+      <div class="preview-flow">
+        <span class="preview-eyebrow">Project workflow</span>
+        <ol>
+          {p.flow.map((step, index) => (
+            <li><span>{String(index + 1).padStart(2, '0')}</span><strong>{step.title}</strong></li>
+          ))}
+        </ol>
+      </div>
+    ) : (
+      <div class="preview-records">
+        <span class="preview-eyebrow">Employee management</span>
+        <div class="preview-record"><span>Employee records</span><i aria-hidden="true">↗</i></div>
+        <div class="preview-record"><span>Create · Read · Update · Delete</span><i aria-hidden="true">+</i></div>
+        <div class="preview-record"><span>MySQL integration</span><i aria-hidden="true">01</i></div>
+      </div>
+    )}
   </div>
 </div>
