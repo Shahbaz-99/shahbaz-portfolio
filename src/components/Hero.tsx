@@ -18,7 +18,7 @@ export default function Hero({ profile, stats }: { profile: Profile; stats: Stat
           <div className="stats">{stats.map((s) => <div key={s.label}><strong>{s.value}</strong><span>{s.label}</span></div>)}</div>
         </Reveal>
         <Reveal delay={150}>
-          <div className="photo">{profile.photoUrl ? <Image src={profile.photoUrl} alt={profile.name} fill sizes="(max-width: 768px) 100vw, 50vw" /> : <span>{initials}</span>}</div>
+          <div className="photo">{profile.photoUrl ? <Image src={profile.photoUrl} alt={profile.name} fill priority sizes="(max-width: 768px) 100vw, 50vw" /> : <span>{initials}</span>}</div>
         </Reveal>
       </div>
     </section>
