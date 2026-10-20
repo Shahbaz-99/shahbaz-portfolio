@@ -1,5 +1,6 @@
 // EDIT HERE: all portfolio text lives in this file. No component changes needed.
 import type { Profile, Stat, ProcessStep, Project, Experience, Education, SkillGroup } from "@/types";
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export const profile: Profile = {
   name: "Shahbaz Ali",
@@ -13,8 +14,8 @@ export const profile: Profile = {
   email: "sahbaj.swn@gmail.com",
   github: "https://github.com/Shahbaz-99",
   linkedin: "https://www.linkedin.com/in/shahbaz-ali-tech/",
-  resumeUrl: "/resume.pdf", // put your PDF at public/resume.pdf
-  photoUrl: "/photo.jpg",
+  resumeUrl: `${base}/resume.pdf`,
+  photoUrl: `${base}/photo.jpg`,
 };
 
 export const stats: Stat[] = [
@@ -24,7 +25,7 @@ export const stats: Stat[] = [
   { value: "RAG · NLP", label: "Exploring" },
 ];
 
-export const process: ProcessStep[] = [
+export const processSteps: ProcessStep[] = [
   { title: "Understand", description: "Clarify requirements and edge cases before writing code." },
   { title: "Design", description: "Plan models, endpoints and architecture." },
   { title: "Build", description: "Write tested, readable code following SOLID principles." },

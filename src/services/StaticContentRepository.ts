@@ -5,7 +5,7 @@ import * as data from "@/content/data";
 export class StaticContentRepository implements ContentRepository {
   getProfile() { return data.profile; }
   getStats() { return data.stats; }
-  getProcess() { return data.process; }
+  getProcess() { return data.processSteps; }
   getProjects() { return data.projects; }
   getExperience() { return data.experience; }
   getEducation() { return data.education; }
